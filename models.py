@@ -7,21 +7,6 @@ from datetime import date
 from bson import ObjectId
 
 
-class PyObjectId(ObjectId):
-    @classmethod
-    def __get_validators__(cls):
-        yield cls.validate
-
-    @classmethod
-    def validate(cls, v):
-        if not ObjectId.is_valid(v):
-            raise ValueError("Invalid objectid")
-        return ObjectId(v)
-
-    @classmethod
-    def __modify_schema__(cls, field_schema):
-        field_schema.update(type="string")
-
 class Season(str, Enum):
     advent = "Advent"
     christmas = "Christmas"
@@ -48,7 +33,9 @@ class LectionaryDate(BaseModel):
     ordinal: int = None
 
 
-class LectionInput(BaseModel):
+class Lection(BaseModel):
+    _id: str = None
+
     lectionary_date: Optional[LectionaryDate] = None
     calendar_date: Optional[date] = None
     short_name: str = Field(..., title="Short Name", example="Advent1A")
@@ -70,14 +57,4 @@ class LectionInput(BaseModel):
     class Config:
         allow_population_by_field_name = True
         arbitrary_types_allowed = True
-        json_encoders = {ObjectId: str}
-        underscore_attrs_are_private = True
-
-class Lection(LectionInput):
-    id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
-
-    class Config:
-        allow_population_by_field_name = True
-        arbitrary_types_allowed = True
-        json_encoders = {ObjectId: str}
         underscore_attrs_are_private = True
