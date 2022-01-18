@@ -1,7 +1,7 @@
 from datetime import datetime, time, timedelta
 from typing import Optional, List
 from uuid import UUID
-from models import Lection
+from models import Lection, LectionInput
 
 from fastapi import Body, FastAPI, Header, status, HTTPException
 from fastapi.responses import JSONResponse
@@ -25,9 +25,10 @@ async def env():
 
 @app.post(
     "/",
+    response_model_exclude_none=True,
     response_description="Add a lection",
     response_model=Lection)
-async def create_lection(lection: Lection):
+async def create_lection(lection: LectionInput):
     #print(f"create_date: I: type(lection)={type(lection)}, lection={lection}")
     lection = jsonable_encoder(lection)
     #print(f"create_date: II: type(lection)={type(lection)}, lection={lection}")
@@ -40,6 +41,7 @@ async def create_lection(lection: Lection):
 
 @app.get(
     "/",
+    response_model_exclude_none=True,
     response_description="List all lections",
     response_model=List[Lection])
 async def read_lections():
@@ -48,6 +50,7 @@ async def read_lections():
 
 @app.get(
     "/{id}",
+    response_model_exclude_none=True,
     response_description="List a single lection",
     response_model=Lection)
 async def create_lections(id: str):
@@ -58,6 +61,7 @@ async def create_lections(id: str):
 
 @app.delete(
     "/{id}",
+    response_model_exclude_none=True,
     response_description="Delete a lection")
 async def delete_student(id: str):
     delete_result = await db["lectionary"].delete_one({"_id": id})

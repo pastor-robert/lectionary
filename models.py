@@ -47,8 +47,8 @@ class LectionaryDate(BaseModel):
     season: Season
     ordinal: int = None
 
-class Lection(BaseModel):
-    id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
+
+class LectionInput(BaseModel):
     lectionary_date: Optional[LectionaryDate] = None
     calendar_date: Optional[date] = None
     short_name: str = Field(..., title="Short Name", example="Advent1A")
@@ -71,3 +71,13 @@ class Lection(BaseModel):
         allow_population_by_field_name = True
         arbitrary_types_allowed = True
         json_encoders = {ObjectId: str}
+        underscore_attrs_are_private = True
+
+class Lection(LectionInput):
+    id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
+
+    class Config:
+        allow_population_by_field_name = True
+        arbitrary_types_allowed = True
+        json_encoders = {ObjectId: str}
+        underscore_attrs_are_private = True

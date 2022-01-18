@@ -3,7 +3,6 @@ asgiref==3.4.1
 asttokens==2.0.5
 backcall==0.2.0
 black==21.12b0
-bson==0.5.10
 cachetools==4.2.4
 certifi==2021.10.8
 charset-normalizer==2.0.10
