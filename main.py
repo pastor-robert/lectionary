@@ -88,7 +88,7 @@ async def create(lection: Lection):
 
 
 @app.get(
-    "/v1/lections/",
+    "/v1/lections",
     tags=["v1"],
     response_model_exclude_none=True,
     response_description="List all lections",
@@ -140,3 +140,10 @@ def get_secret(
     request = {"name": name}
     secret = service.access_secret_version(request=request)
     return secret.payload.data.decode("utf-8")
+
+print("Hello, world")
+print(app.routes)
+from pprint import pprint
+pprint([
+        {"path": route.path, "name": route.name} for route in app.routes
+    ])
