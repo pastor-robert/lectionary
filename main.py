@@ -4,7 +4,7 @@ from uuid import UUID
 from models import Lection
 
 from fastapi import Body, FastAPI, Header, Request, status, HTTPException
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, HTMLResponse
 from fastapi.encoders import jsonable_encoder
 
 from google.cloud import secretmanager
@@ -15,13 +15,53 @@ from pymongo.errors import DuplicateKeyError
 import os
 
 
+from fastapi import FastAPI
+
+description = """
+# Lectionary API to make RCL machine-usable.  📖
+
+
+## Lection
+
+Typical REST interface: 
+
+* `GET lections`
+* `GET lections/{id}`
+* `POST lections`
+* `PUT lections/{id}` - not implemented yet
+* `DELETE lections/{id}` 
+"""
+
 client = None
 db = None
-app = FastAPI()
+
+openapi_tags = [
+    {
+        "name": "v1",
+        "description": "ReST/CRUD interface for lectionary data",
+    },
+]
+
+app = FastAPI(
+    title="Lectionary",
+    description=description,
+    version="0.0.1",
+    #terms_of_service="http://example.com/terms/",
+    contact={
+        "name": "Rob Adams",
+        # "url": "http://x-force.example.com/contact/",
+        "email": "rob@rob-adams.us",
+    },
+    license_info={
+        "name": "Apache 2.0",
+        "url": "https://www.apache.org/licenses/LICENSE-2.0.html",
+    },
+    openapi_tags=openapi_tags,
+)
+
 
 @app.exception_handler(DuplicateKeyError)
 async def duplicate_key_error(request: Request, exc: DuplicateKeyError):
-    print(f"DuplicateKey: {exc}")
     return JSONResponse(
         status_code=409,
         content={"message": "Duplicate Key Error"}
@@ -33,44 +73,45 @@ async def env():
     return os.environ
 
 @app.post(
-    "/",
+    "/v1/lections",
+    tags=["v1"],
     response_model_exclude_none=True,
     response_description="Add a lection",
     response_model=Lection)
 async def create(lection: Lection):
-    #print(f"create_date: I: type(lection)={type(lection)}, lection={lection}")
     lection = jsonable_encoder(lection)
-    #print(f"create_date: II: type(lection)={type(lection)}, lection={lection}")
     lection["_id"] = lection["short_name"]
     new_lection = await db["lectionary"].insert_one(lection)
-    #print(f"create_date: III: new_lection={new_lection}")
     created_lection = await db["lectionary"].find_one({"_id": new_lection.inserted_id})
-    #print(f"create_date: IV: created_lection={created_lection}")
     return JSONResponse(status_code=status.HTTP_201_CREATED, content=created_lection)
 
 
+
 @app.get(
-    "/",
+    "/v1/lections/",
+    tags=["v1"],
     response_model_exclude_none=True,
     response_description="List all lections",
     response_model=List[Lection])
-async def read_one():
+async def read_many():
     dates = await db["lectionary"].find().to_list(1000)
     return dates
 
 @app.get(
-    "/{id}",
+    "/v1/lections/{id}",
+    tags=["v1"],
     response_model_exclude_none=True,
     response_description="List a single lection",
     response_model=Lection)
-async def read_many(id: str):
+async def read_one(id: str):
     lection = await db["lectionary"].find_one({"_id": id})
     if(lection):
         return lection
     raise HTTPException(status_code=404, detail=f"Lection {id} not found")
 
 @app.delete(
-    "/{id}",
+    "/v1/lections/{id}",
+    tags=["v1"],
     response_model_exclude_none=True,
     response_description="Delete a lection")
 async def delete(id: str):
